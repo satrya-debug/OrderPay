@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OrderPay POS — Bistro Rasa Nusantara
 
-## Getting Started
+Aplikasi pemesanan & pembayaran restoran berbasis Next.js (App Router) + TypeScript + Tailwind CSS.
 
-First, run the development server:
+## Menjalankan project
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka http://localhost:3000 — otomatis diarahkan ke `/menu`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Peta halaman
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Customer (pemesanan via meja)**
+- `/menu` — Daftar menu makanan
+- `/menu/[menuId]` — Detail menu & catatan pesanan
+- `/keranjang` — Keranjang & pilih metode pembayaran
+- `/payment` — Checkout e-wallet / VA
+- `/payment/cash` — Bayar tunai di kasir (barcode)
+- `/konfirmasi/online` — Konfirmasi pembayaran online berhasil
+- `/konfirmasi/cash` — Konfirmasi pembayaran cash berhasil
+- `/verifikasi-kasir` — QR gate verifikasi kasir
+- `/status` — Status pesanan / progres dapur
 
-## Learn More
+**Internal (staff)**
+- `/login` — Login karyawan (Kasir/Koki/Admin)
+- `/admin/menu` — Dashboard admin: kelola menu restoran
+- `/admin/inventaris`, `/admin/pengguna` — placeholder (belum ada desain)
+- `/kasir`, `/koki` — placeholder (belum ada desain)
 
-To learn more about Next.js, take a look at the following resources:
+## Catatan
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Semua data (menu, harga, stok) masih **mock data** di `lib/mock-data.ts` — belum terhubung ke backend/database.
+- State keranjang & sesi meja pakai React Context (`context/CartContext.tsx`, `context/SessionContext.tsx`), disimpan di memori (reset saat refresh).
+- Untuk menghubungkan ke backend sungguhan, ganti pemanggilan `MENU_ITEMS` / `getMenuItemById` di `lib/mock-data.ts` dengan fetch API kamu.
