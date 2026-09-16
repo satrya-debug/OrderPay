@@ -8,8 +8,8 @@ import { formatRupiah } from "@/lib/utils";
 
 export default function BayarCashPage() {
   const router = useRouter();
-  const { items, totals, setPaymentMethod } = useCart();
-  const { tableNumber, orderId } = useSession();
+  const { items, totals, setPaymentMethod, clearCart } = useCart();
+  const { tableNumber, orderId, setOrderedItems, orderedItems, orderedTotals } = useSession();
 
   return (
     <div className="px-5 pt-4 pb-8">
@@ -79,7 +79,7 @@ export default function BayarCashPage() {
           <span className="font-medium text-neutral-800">Cash</span>
         </div>
         <p className="mb-1 mt-1 text-xs font-medium text-neutral-500">DAFTAR PESANAN</p>
-        {items.map(({ menuItem, quantity, note }) => (
+        {orderedItems.map(({ menuItem, quantity, note }) => (
           <div key={menuItem.id} className="flex justify-between border-t border-neutral-100 py-2 text-sm">
             <div>
               <p className="font-medium text-neutral-800">
@@ -93,21 +93,21 @@ export default function BayarCashPage() {
         <div className="mt-2 space-y-1 border-t border-neutral-100 pt-2 text-sm text-neutral-600">
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>{formatRupiah(totals.subtotal)}</span>
+            <span>{formatRupiah(orderedTotals.subtotal)}</span>
           </div>
           <div className="flex justify-between">
             <span>PB1 / Pajak Restoran (10%)</span>
-            <span>{formatRupiah(totals.tax)}</span>
+            <span>{formatRupiah(orderedTotals.tax)}</span>
           </div>
           <div className="flex justify-between">
             <span>Biaya Layanan (5%)</span>
-            <span>{formatRupiah(totals.serviceFee)}</span>
+            <span>{formatRupiah(orderedTotals.serviceFee)}</span>
           </div>
         </div>
         <div className="mt-2 flex items-center justify-between border-t border-neutral-100 pt-2">
           <span className="text-base font-semibold text-neutral-900">Total Pembayaran</span>
           <div className="text-right">
-            <p className="text-lg font-semibold text-neutral-900">{formatRupiah(totals.total)}</p>
+            <p className="text-lg font-semibold text-neutral-900">{formatRupiah(orderedTotals.total)}</p>
             <p className="text-[10px] font-medium text-brand-600">LUNAS</p>
           </div>
         </div>
@@ -127,7 +127,11 @@ export default function BayarCashPage() {
       </div>
 
       <button
-        onClick={() => router.push("/status")}
+        onClick={() => {
+          setOrderedItems(items);
+          clearCart();
+          router.push("/status");
+        }}
         className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3.5 text-sm font-semibold text-white"
       >
         <ChefHat size={16} /> Pantau Pesanan Dapur

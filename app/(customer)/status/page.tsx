@@ -11,17 +11,39 @@ import type { CartItem } from "@/lib/types";
 
 export default function StatusPesananPage() {
   const router = useRouter();
-  const { items, totals } = useCart();
-  const { tableNumber, orderId } = useSession();
+  const { tableNumber, orderId, orderedItems, orderedTotals } = useSession();
 
-  const stageItems =
-    items.length > 0
-      ? items
-      : [
-          { menuItem: { id: "1", name: "Nasi Goreng Kampung", price: 42000, image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=200&q=80" }, quantity: 1, note: "Pedas Sedang · Telur 1/2 Matang" },
-          { menuItem: { id: "2", name: "Tahu Telur Bumbu Petis", price: 26000, image: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=200&q=80" }, quantity: 1, note: "Porsi Reguler · Kerupuk Bawang..." },
-          { menuItem: { id: "3", name: "Es Teh Manis Jumbo", price: 10200, image: "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=200&q=80" }, quantity: 1, note: "Sedikit Gula · Es Batu Normal" },
-        ] as CartItem[];
+  if (!orderId || orderedItems.length === 0) {
+    return (
+      <div>
+        <header className="flex items-center justify-between px-5 py-3 bg-neutral-100">
+          <div>
+            <p className="text-[10px] tracking-wide text-neutral-500">{RESTAURANT_NAME}</p>
+            <h1 className="text-[17px] font-semibold text-neutral-900">Status Pesanan</h1>
+          </div>
+          <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-neutral-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
+            Meja {tableNumber}
+          </span>
+        </header>
+
+        <div className="px-5 pt-4">
+          <div className="mt-16 flex flex-col items-center text-center">
+            <p className="text-sm font-medium text-neutral-700">Belum ada pesanan aktif</p>
+            <p className="mt-1 text-xs text-neutral-500">Yuk pilih menu favoritmu dulu.</p>
+            <button
+              onClick={() => router.push("/menu")}
+              className="mt-4 rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Lihat Menu
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const stageItems = orderedItems;
 
   return (
     <div className="px-5 pt-4 pb-8">
@@ -131,7 +153,7 @@ export default function StatusPesananPage() {
         <div className="mt-2 flex items-center justify-between rounded-xl bg-neutral-50 p-3">
           <span className="text-sm text-neutral-600">Total Pembayaran</span>
           <span className="text-base font-semibold text-neutral-900">
-            {formatRupiah(totals.total || 78200)}
+            {formatRupiah(orderedTotals.total)}
           </span>
         </div>
       </div>

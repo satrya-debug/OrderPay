@@ -1,8 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import { OrderMode } from "@/lib/types";
+import { OrderMode, CartItem } from "@/lib/types";
 import { DEFAULT_TABLE_NUMBER } from "@/lib/constants";
+import { calculateOrderTotals } from "@/lib/utils";
 
 interface SessionContextValue {
   tableNumber: string;
@@ -10,13 +11,19 @@ interface SessionContextValue {
   setMode: (mode: OrderMode) => void;
   orderId: string;
   setOrderId: (id: string) => void;
+  orderedItems: CartItem[];
+  setOrderedItems: (items: CartItem[]) => void;
+  orderedTotals: ReturnType<typeof calculateOrderTotals>;
 }
 
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<OrderMode>("dine-in");
-  const [orderId, setOrderId] = useState<string>(`ORD-8824-M${DEFAULT_TABLE_NUMBER}`);
+  const [orderId, setOrderId] = useState<string>("");
+  const [orderedItems, setOrderedItems] = useState<CartItem[]>([]);
+
+  const orderedTotals = React.useMemo(() => calculateOrderTotals(orderedItems), [orderedItems]);
 
   const value: SessionContextValue = {
     tableNumber: DEFAULT_TABLE_NUMBER,
@@ -24,6 +31,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setMode,
     orderId,
     setOrderId,
+    orderedItems,
+    setOrderedItems,
+    orderedTotals,
   };
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

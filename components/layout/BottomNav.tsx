@@ -25,13 +25,13 @@ export function BottomNav() {
             key={href}
             href={href}
             className={`relative flex flex-col items-center gap-1 px-2 py-1 text-[11px] ${
-              active ? "text-brand-700 font-semibold" : "text-neutral-400"
+              active ? "text-brand-600 font-semibold" : "text-neutral-400"
             }`}
           >
             <span className="relative">
               <Icon size={20} strokeWidth={active ? 2.4 : 2} />
               {showBadge && totalItemCount > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-700 px-1 text-[9px] font-semibold text-white">
+                <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[9px] font-semibold text-white">
                   {totalItemCount}
                 </span>
               )}

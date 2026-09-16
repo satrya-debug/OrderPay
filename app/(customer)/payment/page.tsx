@@ -24,13 +24,15 @@ const VA_OPTIONS = [
 
 export default function PaymentEwalletPage() {
   const router = useRouter();
-  const { totals } = useCart();
-  const { tableNumber } = useSession();
+  const { totals, clearCart, items } = useCart();
+  const { tableNumber, setOrderedItems } = useSession();
   const [selected, setSelected] = useState("gopay");
 
   const selectedWallet = EWALLETS.find((w) => w.id === selected);
 
   function handlePay() {
+    setOrderedItems(items);
+    clearCart();
     router.push("/konfirmasi/online");
   }
 

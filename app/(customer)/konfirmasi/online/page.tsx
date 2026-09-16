@@ -9,7 +9,7 @@ import { OrderReceiptCard } from "@/components/payment/OrderReceiptCard";
 export default function KonfirmasiOnlinePage() {
   const router = useRouter();
   const { items, totals } = useCart();
-  const { tableNumber, orderId } = useSession();
+  const { tableNumber, orderId, orderedItems, orderedTotals } = useSession();
 
   return (
     <div className="px-5 pt-4 pb-8">
@@ -38,11 +38,11 @@ export default function KonfirmasiOnlinePage() {
       <div className="mt-5">
         <OrderReceiptCard
           orderId={orderId}
-          items={items}
-          subtotal={totals.subtotal}
-          tax={totals.tax}
-          serviceFee={totals.serviceFee}
-          total={totals.total}
+          items={orderedItems}
+          subtotal={orderedTotals.subtotal}
+          tax={orderedTotals.tax}
+          serviceFee={orderedTotals.serviceFee}
+          total={orderedTotals.total}
           paymentLabel="E-Wallet (GoPay / QRIS)"
         />
       </div>

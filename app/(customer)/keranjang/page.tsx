@@ -12,16 +12,13 @@ export default function KeranjangPage() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, paymentMethod, setPaymentMethod, totals, clearCart } =
     useCart();
-  const { tableNumber, mode, setOrderId } = useSession();
+  const { tableNumber, mode, setOrderId, setOrderedItems } = useSession();
 
   function handleConfirm() {
     const id = generateOrderId(tableNumber);
     setOrderId(id);
-    if (paymentMethod === "ewallet") {
-      router.push("/payment");
-    } else {
-      router.push("/payment/cash");
-    }
+    const target = paymentMethod === "ewallet" ? "/payment" : "/payment/cash";
+    router.push(target);
   }
 
   return (
