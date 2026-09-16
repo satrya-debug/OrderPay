@@ -6,7 +6,6 @@ import {
   Receipt,
   History,
   Search,
-  SlidersHorizontal,
   Printer,
   Share2,
   Calendar,
@@ -14,14 +13,16 @@ import {
   CheckCircle2,
   ChevronRight,
   Download,
-  Utensils,
   ShoppingBag,
+  X,
 } from "lucide-react";
 
 export default function OrderHistoryDashboard() {
   const [selectedOrder, setSelectedOrder] = useState<string>("ORD-8820-M12");
   const [statusFilter, setStatusFilter] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [dateFilter, setDateFilter] = useState<"today" | "yesterday" | "lastWeek" | "lastMonth">("today");
 
   const historyOrders = [
     {
@@ -31,7 +32,8 @@ export default function OrderHistoryDashboard() {
       status: "Lunas",
       paymentMethod: "QRIS",
       itemsCount: 3,
-      date: "16 Sep 2026",
+      date: "2026-09-16",
+      dateFormatted: "16 Sep 2026",
       time: "13:48 WIB",
       total: 78200,
       customer: "Bpk. Adityawarman",
@@ -51,7 +53,8 @@ export default function OrderHistoryDashboard() {
       status: "Lunas",
       paymentMethod: "QRIS",
       itemsCount: 2,
-      date: "16 Sep 2026",
+      date: "2026-09-16",
+      dateFormatted: "16 Sep 2026",
       time: "13:42 WIB",
       total: 54000,
       customer: "Dine-in Pelanggan",
@@ -70,7 +73,8 @@ export default function OrderHistoryDashboard() {
       status: "Lunas",
       paymentMethod: "Tunai",
       itemsCount: 5,
-      date: "16 Sep 2026",
+      date: "2026-09-16",
+      dateFormatted: "16 Sep 2026",
       time: "13:30 WIB",
       total: 142500,
       customer: "Ibu Rina",
@@ -90,7 +94,8 @@ export default function OrderHistoryDashboard() {
       status: "Lunas",
       paymentMethod: "GoPay",
       itemsCount: 1,
-      date: "16 Sep 2026",
+      date: "2026-09-16",
+      dateFormatted: "16 Sep 2026",
       time: "13:25 WIB",
       total: 25000,
       customer: "Dine-in Pelanggan",
@@ -108,7 +113,8 @@ export default function OrderHistoryDashboard() {
       status: "Selesai & Diambil",
       paymentMethod: "ShopeePay",
       itemsCount: 2,
-      date: "16 Sep 2026",
+      date: "2026-09-16",
+      dateFormatted: "16 Sep 2026",
       time: "13:10 WIB",
       total: 62000,
       customer: "Sdr. Dimas",
@@ -135,14 +141,40 @@ export default function OrderHistoryDashboard() {
         ? order.type === "Takeaway"
         : order.paymentMethod === statusFilter;
 
-    return matchesSearch && matchesStatus;
+    const orderDate = new Date(order.date);
+    const today = new Date("2026-09-16");
+
+    let matchesDate = true;
+    if (dateFilter === "today") {
+      matchesDate = orderDate.toDateString() === today.toDateString();
+    } else if (dateFilter === "yesterday") {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      matchesDate = orderDate.toDateString() === yesterday.toDateString();
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   const activeOrder = historyOrders.find((o) => o.id === selectedOrder) || historyOrders[3];
 
+  const getDateLabel = () => {
+    switch (dateFilter) {
+      case "today":
+        return "Hari Ini (16 Sep 2026)";
+      case "yesterday":
+        return "Kemarin (15 Sep 2026)";
+      case "lastWeek":
+        return "7 Hari Terakhir";
+      case "lastMonth":
+        return "Bulan Ini";
+      default:
+        return "Hari Ini";
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-[#F4F5F7] font-sans text-slate-800 antialiased">
-      {/* SIDEBAR KIRI */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 flex-shrink-0">
         <div className="space-y-6">
           <div className="flex items-center gap-3 px-2 pt-2">
@@ -174,14 +206,14 @@ export default function OrderHistoryDashboard() {
 
           <nav className="space-y-1">
             <Link
-              href="/kasir"
+              href="/pos"
               className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-600 hover:bg-slate-50 text-xs font-normal transition"
             >
               <Receipt className="w-4 h-4 stroke-[1.8] text-slate-500" />
               <span>Kasir / Transaksi</span>
             </Link>
             <Link
-              href="/kasir/history"
+              href="/pos/history"
               className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-[#054B35] text-white text-xs font-normal shadow-sm"
             >
               <History className="w-4 h-4 stroke-[1.8]" />
@@ -199,7 +231,6 @@ export default function OrderHistoryDashboard() {
         </div>
       </aside>
 
-      {/* AREA UTAMA */}
       <main className="flex-1 flex flex-col min-w-0">
         <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between text-xs text-slate-500 font-normal">
           <div className="flex items-center gap-2">
@@ -216,7 +247,6 @@ export default function OrderHistoryDashboard() {
         </header>
 
         <div className="p-6 flex-1 space-y-5 overflow-y-auto">
-          {/* SEARCH & FILTER CONTROLS */}
           <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1">
               <div className="relative flex-1 max-w-md">
@@ -248,14 +278,78 @@ export default function OrderHistoryDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="flex items-center gap-2 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-normal text-slate-700 hover:bg-slate-100 transition"
-              >
-                <Calendar className="w-3.5 h-3.5 text-slate-500 stroke-[1.8]" />
-                <span>Hari Ini (16 Sep 2026)</span>
-              </button>
+            <div className="flex items-center gap-2 relative">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                  className="flex items-center gap-2 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-normal text-slate-700 hover:bg-slate-100 transition"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-slate-500 stroke-[1.8]" />
+                  <span>{getDateLabel()}</span>
+                </button>
+
+                {isDatePickerOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 p-3 z-50 space-y-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <span className="text-xs font-normal text-slate-700">Pilih Rentang Waktu</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsDatePickerOpen(false)}
+                        className="text-slate-400 hover:text-slate-600 p-0.5"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-1 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDateFilter("today");
+                          setIsDatePickerOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-normal transition ${
+                          dateFilter === "today"
+                            ? "bg-[#054B35] text-white"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        Hari Ini (16 Sep 2026)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDateFilter("yesterday");
+                          setIsDatePickerOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-normal transition ${
+                          dateFilter === "yesterday"
+                            ? "bg-[#054B35] text-white"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        Kemarin (15 Sep 2026)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDateFilter("lastWeek");
+                          setIsDatePickerOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-normal transition ${
+                          dateFilter === "lastWeek"
+                            ? "bg-[#054B35] text-white"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        7 Hari Terakhir
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="button"
                 className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-normal text-slate-700 hover:bg-slate-50 transition shadow-sm"
@@ -267,7 +361,6 @@ export default function OrderHistoryDashboard() {
           </div>
 
           <div className="grid grid-cols-12 gap-5">
-            {/* RIWAYAT DAFTAR PESANAN KIRI (7 COLUMNS) */}
             <div className="col-span-7 space-y-2.5">
               {filteredOrders.map((order) => {
                 const isSelected = selectedOrder === order.id;
@@ -331,7 +424,6 @@ export default function OrderHistoryDashboard() {
               })}
             </div>
 
-            {/* DETAIL STRUK LUNAS KANAN (5 COLUMNS) */}
             <div className="col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="flex items-start justify-between border-b border-slate-100 pb-3">
@@ -343,7 +435,7 @@ export default function OrderHistoryDashboard() {
                       <span className="text-xs text-slate-400 font-light">#{activeOrder.id}</span>
                     </div>
                     <p className="text-[11px] text-slate-500 font-light mt-0.5">
-                      {activeOrder.customer} • {activeOrder.date} ({activeOrder.time})
+                      {activeOrder.customer} • {activeOrder.dateFormatted} ({activeOrder.time})
                     </p>
                   </div>
                   <span className="bg-emerald-100 text-emerald-800 text-[11px] px-3 py-1 rounded-full font-normal flex items-center gap-1">
@@ -400,7 +492,6 @@ export default function OrderHistoryDashboard() {
                 </div>
               </div>
 
-              {/* ACTION BUTTONS */}
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <button
                   type="button"
@@ -421,7 +512,6 @@ export default function OrderHistoryDashboard() {
           </div>
         </div>
 
-        {/* FOOTER SYSTEM STATUS */}
         <footer className="h-10 bg-white border-t border-slate-200 px-6 flex items-center justify-between text-xs text-slate-500 font-normal">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>

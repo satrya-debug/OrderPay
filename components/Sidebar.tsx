@@ -8,8 +8,8 @@ import { Receipt, History } from "lucide-react";
 export default function Sidebar() {
   const pathname = usePathname();
 
-  const isPosActive = pathname === "/pos";
-  const isHistoryActive = pathname === "/pos/history";
+  const isPosActive = pathname === "/kasir";
+  const isHistoryActive = pathname === "/kasir/history";
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 flex-shrink-0">
