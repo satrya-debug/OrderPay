@@ -21,7 +21,27 @@ const SessionContext = createContext<SessionContextValue | undefined>(undefined)
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<OrderMode>("dine-in");
   const [orderId, setOrderId] = useState<string>("");
-  const [orderedItems, setOrderedItems] = useState<CartItem[]>([]);
+  const [orderedItems, setOrderedItemsState] = useState<CartItem[]>([]);
+
+  const setOrderedItems = React.useCallback((newItems: CartItem[]) => {
+    setOrderedItemsState((prev) => {
+      // Merge items if same menuItem.id
+      const map = new Map<string, CartItem>();
+      for (const item of prev) {
+        map.set(item.menuItem.id, { ...item });
+      }
+      for (const item of newItems) {
+        if (map.has(item.menuItem.id)) {
+          const existing = map.get(item.menuItem.id)!;
+          existing.quantity += item.quantity;
+          if (item.note) existing.note = item.note;
+        } else {
+          map.set(item.menuItem.id, { ...item });
+        }
+      }
+      return Array.from(map.values());
+    });
+  }, []);
 
   const orderedTotals = React.useMemo(() => calculateOrderTotals(orderedItems), [orderedItems]);
 

@@ -158,8 +158,11 @@ export default function StatusPesananPage() {
         </div>
       </div>
 
-      <button className="mt-3 flex w-full items-center justify-center gap-1.5 text-sm font-medium text-neutral-500">
-        <FileText size={14} /> Lihat Struk Digital
+      <button
+        onClick={() => router.push("/konfirmasi/online")}
+        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white py-3.5 text-sm font-semibold text-neutral-700 shadow-sm"
+      >
+        <FileText size={16} /> Lihat Struk Digital
       </button>
       <button
         onClick={() => router.push("/menu")}
