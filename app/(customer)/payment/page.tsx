@@ -136,12 +136,6 @@ export default function PaymentEwalletPage() {
           Buka Aplikasi {selectedWallet?.name ?? ""} &amp; Bayar ({formatRupiah(totals.total)})
           <ExternalLink size={14} />
         </button>
-        <button
-          onClick={() => router.push("/verifikasi-kasir")}
-          className="mt-3 w-full text-center text-sm font-medium text-neutral-500"
-        >
-          Sudah Bayar? Lihat QR Gate Kasir →
-        </button>
 
         <p className="mt-6 text-center text-[11px] text-neutral-400">
           Terhubung dengan Gateway QRIS &amp; Bank Indonesia

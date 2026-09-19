@@ -1,8 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, X, Minus, Plus, PlusCircle, Wallet, Banknote, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  X,
+  Minus,
+  Plus,
+  PlusCircle,
+  Wallet,
+  Banknote,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "@/context/SessionContext";
 import { formatRupiah, generateOrderId } from "@/lib/utils";
@@ -23,14 +34,48 @@ const PAYMENT_OPTIONS = [
   },
 ];
 
+// Daftar kode promo yang berlaku (0.2 = diskon 20%)
+const PROMO_CODES: Record<string, number> = {
+  LIWET20: 0.2,
+};
+
 export default function KeranjangPage() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, paymentMethod, setPaymentMethod, totals, clearCart } =
     useCart();
   const { tableNumber, mode, setOrderId } = useSession();
 
-  const discount = totals.subtotal * 0.2;
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [promoError, setPromoError] = useState("");
+
+  const discountRate = appliedPromo ? PROMO_CODES[appliedPromo] : 0;
+  const discount = totals.subtotal * discountRate;
   const grandTotal = totals.total - discount;
+
+  function handleApplyPromo() {
+    const code = promoInput.trim().toUpperCase();
+
+    if (!code) {
+      setPromoError("Masukkan kode promo terlebih dahulu");
+      return;
+    }
+
+    if (PROMO_CODES[code]) {
+      setAppliedPromo(code);
+      setPromoInput(code);
+      setPromoError("");
+    } else {
+      setAppliedPromo(null);
+      setPromoError("Kode promo tidak valid");
+    }
+  }
+
+  function handleRemovePromo() {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError("");
+  }
 
   function handleConfirm() {
     const id = generateOrderId(tableNumber);
@@ -136,16 +181,46 @@ export default function KeranjangPage() {
                 <input
                   type="text"
                   placeholder="Contoh: LIWET20"
-                  className="flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm uppercase text-neutral-900 focus:border-brand-700 focus:outline-none"
+                  value={promoInput}
+                  disabled={!!appliedPromo}
+                  onChange={(e) => {
+                    setPromoInput(e.target.value);
+                    setPromoError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !appliedPromo) handleApplyPromo();
+                  }}
+                  className="flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm uppercase text-neutral-900 focus:border-brand-700 focus:outline-none disabled:bg-neutral-50 disabled:text-neutral-500"
                 />
-                <button className="rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-95">
-                  Terapkan
-                </button>
+                {appliedPromo ? (
+                  <button
+                    onClick={handleRemovePromo}
+                    className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-600 transition hover:border-red-300 hover:text-red-500 active:scale-95"
+                  >
+                    Hapus
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleApplyPromo}
+                    className="rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-95"
+                  >
+                    Terapkan
+                  </button>
+                )}
               </div>
-              <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-neutral-500">
-                <CheckCircle2 size={13} className="text-brand-600" />
-                Kode LIWET20 berhasil dipakai
-              </div>
+
+              {appliedPromo && (
+                <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-neutral-500">
+                  <CheckCircle2 size={13} className="text-brand-600" />
+                  Kode {appliedPromo} berhasil dipakai (Diskon {Math.round(discountRate * 100)}%)
+                </div>
+              )}
+              {promoError && (
+                <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-red-500">
+                  <XCircle size={13} />
+                  {promoError}
+                </div>
+              )}
             </div>
 
             {/* Metode pembayaran */}
@@ -193,10 +268,12 @@ export default function KeranjangPage() {
                 <span>Subtotal ({items.reduce((s, i) => s + i.quantity, 0)} item)</span>
                 <span>{formatRupiah(totals.subtotal)}</span>
               </div>
-              <div className="flex justify-between py-1 text-sm text-brand-600">
-                <span>Diskon Promo (LIWET20)</span>
-                <span>-{formatRupiah(discount)}</span>
-              </div>
+              {appliedPromo && (
+                <div className="flex justify-between py-1 text-sm text-brand-600">
+                  <span>Diskon Promo ({appliedPromo})</span>
+                  <span>-{formatRupiah(discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between py-1 text-sm text-neutral-600">
                 <span>PB1 / Pajak Restoran (10%)</span>
                 <span>{formatRupiah(totals.tax)}</span>
