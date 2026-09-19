@@ -25,7 +25,7 @@ const VA_OPTIONS = [
 export default function PaymentEwalletPage() {
   const router = useRouter();
   const { totals, clearCart, items } = useCart();
-  const { tableNumber, setOrderedItems } = useSession();
+  const { tableNumber, mode, setOrderedItems } = useSession();
   const [selected, setSelected] = useState("gopay");
 
   const selectedWallet = EWALLETS.find((w) => w.id === selected);
@@ -48,9 +48,11 @@ export default function PaymentEwalletPage() {
             <h1 className="text-[15px] font-semibold text-neutral-900">Payment Checkout</h1>
           </div>
         </div>
-        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600">
-          DINE IN
-        </span>
+
+        <div className="flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-3 py-1.5 text-[11px] font-medium text-[#054B35]">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          {mode === "dine-in" ? `Meja ${tableNumber}` : "Takeaway"}
+        </div>
       </header>
 
       <div className="px-5 pt-4 pb-8">

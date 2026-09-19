@@ -8,7 +8,7 @@ import { useCart } from "@/context/CartContext";
 const NAV_ITEMS = [
   { href: "/menu", label: "Menu", icon: UtensilsCrossed },
   { href: "/keranjang", label: "Keranjang", icon: ShoppingBag, showBadge: true },
-  { href: "/payment", label: "Pembayaran", icon: Receipt },
+  { href: "/payment", label: "Bayar", icon: Receipt },
   { href: "/status", label: "Status", icon: ChefHat },
 ];
 
@@ -16,30 +16,53 @@ export function BottomNav() {
   const pathname = usePathname();
   const { totalItemCount } = useCart();
 
+  const isActive = (href: string) =>
+    pathname === href ||
+    pathname?.startsWith(href + "/") ||
+    (href === "/menu" && (pathname === "/takeaway" || pathname?.startsWith("/takeaway/")));
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-20 mx-auto flex max-w-md items-center justify-between border-t border-black/5 bg-white px-6 py-2.5">
-      {NAV_ITEMS.map(({ href, label, icon: Icon, showBadge }) => {
-        const active = pathname === href || pathname?.startsWith(href + "/");
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={`relative flex flex-col items-center gap-1 px-2 py-1 text-[11px] ${
-              active ? "text-brand-600 font-semibold" : "text-neutral-400"
-            }`}
-          >
-            <span className="relative">
-              <Icon size={20} strokeWidth={active ? 2.4 : 2} />
-              {showBadge && totalItemCount > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[9px] font-semibold text-white">
-                  {totalItemCount}
-                </span>
+    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto max-w-md">
+      <div className="relative bg-white/95 backdrop-blur-2xl border-t border-black/[0.04] px-2 pt-1.5 pb-2 flex items-center justify-around shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
+        {NAV_ITEMS.map(({ href, label, icon: Icon, showBadge }) => {
+          const active = isActive(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-2xl transition-all duration-300 ${
+                active
+                  ? "text-[#054B35]"
+                  : "text-[#A1A1AA] hover:text-[#52525B]"
+              }`}
+            >
+              {active && (
+                <span className="absolute inset-0 bg-emerald-50 rounded-2xl"></span>
               )}
-            </span>
-            {label}
-          </Link>
-        );
-      })}
+              {active && (
+                <span className="absolute -top-[3px] left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-gradient-to-r from-[#054B35] to-emerald-500"></span>
+              )}
+              <span className="relative z-10">
+                <Icon
+                  className={`w-[22px] h-[22px] transition-all duration-300 ${
+                    active ? "stroke-[2.2] scale-105" : "stroke-[1.6]"
+                  }`}
+                />
+                {showBadge && totalItemCount > 0 && (
+                  <span className="absolute -right-2.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-br bg-[#F59E0B] to-orange-500 text-white px-1 text-[9px] font-bold shadow-md ring-2 ring-white">
+                    {totalItemCount}
+                  </span>
+                )}
+              </span>
+              <span className={`relative z-10 text-[10px] transition-all duration-300 ${
+                active ? "font-bold tracking-tight" : "font-medium"
+              }`}>
+                {label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

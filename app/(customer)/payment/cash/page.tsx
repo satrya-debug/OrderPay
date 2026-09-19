@@ -79,7 +79,7 @@ export default function BayarCashPage() {
           <span className="font-medium text-neutral-800">Cash</span>
         </div>
         <p className="mb-1 mt-1 text-xs font-medium text-neutral-500">DAFTAR PESANAN</p>
-        {orderedItems.map(({ menuItem, quantity, note }) => (
+        {items.map(({ menuItem, quantity, note }) => (
           <div key={menuItem.id} className="flex justify-between border-t border-neutral-100 py-2 text-sm">
             <div>
               <p className="font-medium text-neutral-800">
@@ -93,22 +93,22 @@ export default function BayarCashPage() {
         <div className="mt-2 space-y-1 border-t border-neutral-100 pt-2 text-sm text-neutral-600">
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>{formatRupiah(orderedTotals.subtotal)}</span>
+            <span>{formatRupiah(totals.subtotal)}</span>
           </div>
           <div className="flex justify-between">
             <span>PB1 / Pajak Restoran (10%)</span>
-            <span>{formatRupiah(orderedTotals.tax)}</span>
+            <span>{formatRupiah(totals.tax)}</span>
           </div>
           <div className="flex justify-between">
             <span>Biaya Layanan (5%)</span>
-            <span>{formatRupiah(orderedTotals.serviceFee)}</span>
+            <span>{formatRupiah(totals.serviceFee)}</span>
           </div>
         </div>
         <div className="mt-2 flex items-center justify-between border-t border-neutral-100 pt-2">
           <span className="text-base font-semibold text-neutral-900">Total Pembayaran</span>
           <div className="text-right">
-            <p className="text-lg font-semibold text-neutral-900">{formatRupiah(orderedTotals.total)}</p>
-            <p className="text-[10px] font-medium text-brand-600">LUNAS</p>
+            <p className="text-lg font-semibold text-neutral-900">{formatRupiah(totals.total)}</p>
+            <p className="text-[10px] font-medium text-amber-600">BELUM DIBAYAR</p>
           </div>
         </div>
       </div>
@@ -130,11 +130,11 @@ export default function BayarCashPage() {
         onClick={() => {
           setOrderedItems(items);
           clearCart();
-          router.push("/status");
+          router.push("/konfirmasi/cash");
         }}
         className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3.5 text-sm font-semibold text-white"
       >
-        <ChefHat size={16} /> Pantau Pesanan Dapur
+        <ChefHat size={16} /> Pesan &amp; Pantau Dapur
       </button>
       <button
         onClick={() => {

@@ -206,14 +206,14 @@ export default function OrderHistoryDashboard() {
 
           <nav className="space-y-1">
             <Link
-              href="/pos"
+              href="/kasir"
               className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-600 hover:bg-slate-50 text-xs font-normal transition"
             >
               <Receipt className="w-4 h-4 stroke-[1.8] text-slate-500" />
               <span>Kasir / Transaksi</span>
             </Link>
             <Link
-              href="/pos/history"
+              href="/kasir/history"
               className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-[#054B35] text-white text-xs font-normal shadow-sm"
             >
               <History className="w-4 h-4 stroke-[1.8]" />

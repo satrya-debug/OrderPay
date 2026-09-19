@@ -27,6 +27,9 @@ export const MENU_ITEMS: MenuItem[] = [
       "https://images.unsplash.com/photo-1598515213692-5f252f9db22f?w=800&q=80",
     category: "makanan-utama",
     tag: "Chef Pick",
+    rating: 4.8,
+    reviewCount: 95,
+    prepTime: "~20 mnt",
     isPopular: true,
   },
   {
@@ -39,6 +42,9 @@ export const MENU_ITEMS: MenuItem[] = [
       "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80",
     category: "makanan-utama",
     tag: "Khas Jakarta",
+    rating: 4.7,
+    reviewCount: 88,
+    prepTime: "~15 mnt",
     isPopular: true,
   },
   {
@@ -51,6 +57,9 @@ export const MENU_ITEMS: MenuItem[] = [
       "https://images.unsplash.com/photo-1546173159-315724a31696?w=800&q=80",
     category: "minuman",
     tag: "100% Jeruk Murni",
+    rating: 4.8,
+    reviewCount: 110,
+    prepTime: "~5 mnt",
     isPopular: true,
   },
   {
@@ -63,6 +72,9 @@ export const MENU_ITEMS: MenuItem[] = [
       "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80",
     category: "camilan",
     tag: "Camilan Renyah",
+    rating: 4.6,
+    reviewCount: 74,
+    prepTime: "~10 mnt",
     isPopular: true,
   },
   {
@@ -75,6 +87,9 @@ export const MENU_ITEMS: MenuItem[] = [
       "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800&q=80",
     category: "minuman",
     tag: "Favorit Kopi",
+    rating: 4.9,
+    reviewCount: 150,
+    prepTime: "~5 mnt",
     isPopular: true,
   },
   {
@@ -86,6 +101,10 @@ export const MENU_ITEMS: MenuItem[] = [
     image:
       "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=800&q=80",
     category: "camilan",
+    tag: "Camilan Tradisional",
+    rating: 4.5,
+    reviewCount: 42,
+    prepTime: "~12 mnt",
   },
   {
     id: "etmj07",
@@ -95,6 +114,10 @@ export const MENU_ITEMS: MenuItem[] = [
     image:
       "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=800&q=80",
     category: "minuman",
+    tag: "Segar",
+    rating: 4.8,
+    reviewCount: 210,
+    prepTime: "~3 mnt",
   },
 ];
 
