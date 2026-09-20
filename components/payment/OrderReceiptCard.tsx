@@ -1,5 +1,6 @@
 import { CartItem } from "@/lib/types";
 import { formatRupiah } from "@/lib/utils";
+import { formatDateTime } from "@/lib/order-store";
 
 interface OrderReceiptCardProps {
   orderId: string;
@@ -9,6 +10,9 @@ interface OrderReceiptCardProps {
   serviceFee: number;
   total: number;
   paymentLabel: string;
+  discount?: number;
+  promoCode?: string;
+  paidAt?: string;
 }
 
 export function OrderReceiptCard({
@@ -19,6 +23,9 @@ export function OrderReceiptCard({
   serviceFee,
   total,
   paymentLabel,
+  discount = 0,
+  promoCode,
+  paidAt,
 }: OrderReceiptCardProps) {
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm">
@@ -29,7 +36,7 @@ export function OrderReceiptCard({
         </div>
         <div className="text-right">
           <p className="text-[11px] text-neutral-500">WAKTU TRANSAKSI</p>
-          <p className="text-sm font-medium text-neutral-700">Hari ini, 13:48 WIB</p>
+          <p className="text-sm font-medium text-neutral-700">{formatDateTime(paidAt)}</p>
         </div>
       </div>
       <div className="flex justify-between border-t border-neutral-100 py-2 text-sm text-neutral-600">
@@ -53,6 +60,12 @@ export function OrderReceiptCard({
           <span>Subtotal</span>
           <span>{formatRupiah(subtotal)}</span>
         </div>
+        {discount > 0 && (
+          <div className="flex justify-between text-brand-600">
+            <span>Diskon Promo{promoCode ? ` (${promoCode})` : ""}</span>
+            <span>-{formatRupiah(discount)}</span>
+          </div>
+        )}
         <div className="flex justify-between">
           <span>PB1 / Pajak Restoran (10%)</span>
           <span>{formatRupiah(tax)}</span>

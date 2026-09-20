@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "@/context/SessionContext";
+import { createOrder } from "@/lib/order-store";
 import { formatRupiah, generateOrderId } from "@/lib/utils";
 import { RESTAURANT_NAME } from "@/lib/constants";
 
@@ -34,7 +35,6 @@ const PAYMENT_OPTIONS = [
   },
 ];
 
-// Daftar kode promo yang berlaku (0.2 = diskon 20%)
 const PROMO_CODES: Record<string, number> = {
   LIWET20: 0.2,
 };
@@ -43,7 +43,7 @@ export default function KeranjangPage() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, paymentMethod, setPaymentMethod, totals, clearCart } =
     useCart();
-  const { tableNumber, mode, setOrderId } = useSession();
+  const { tableNumber, mode, orderId, setOrderId } = useSession();
 
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
@@ -79,9 +79,24 @@ export default function KeranjangPage() {
 
   function handleConfirm() {
     const id = generateOrderId(tableNumber);
+    createOrder(
+      {
+        id,
+        tableNumber: String(tableNumber),
+        mode,
+        items,
+        paymentMethod,
+        promoCode: appliedPromo ?? undefined,
+        subtotal: totals.subtotal,
+        discount,
+        tax: totals.tax,
+        serviceFee: totals.serviceFee,
+        total: grandTotal,
+      },
+      orderId
+    );
     setOrderId(id);
-    const target = paymentMethod === "ewallet" ? "/payment" : "/payment/cash";
-    router.push(target);
+    router.push(paymentMethod === "ewallet" ? "/payment" : "/payment/cash");
   }
 
   return (
@@ -117,7 +132,6 @@ export default function KeranjangPage() {
           </div>
         ) : (
           <>
-            {/* Daftar item */}
             <div className="flex flex-col gap-2.5">
               {items.map(({ menuItem, quantity, note }) => (
                 <div
@@ -172,7 +186,6 @@ export default function KeranjangPage() {
               Tambah Menu Lainnya
             </button>
 
-            {/* Kode promo */}
             <div className="mt-5 flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Kode Promo</p>
             </div>
@@ -223,7 +236,6 @@ export default function KeranjangPage() {
               )}
             </div>
 
-            {/* Metode pembayaran */}
             <div className="mt-5 flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 Metode Pembayaran
@@ -255,7 +267,6 @@ export default function KeranjangPage() {
               ))}
             </div>
 
-            {/* Rincian tagihan */}
             <div className="mt-5 rounded-2xl bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-neutral-500">RINCIAN TAGIHAN</p>

@@ -4,6 +4,17 @@ export type OrderMode = "dine-in" | "takeaway";
 
 export type PaymentMethod = "ewallet" | "cash";
 
+export type PaymentStatus = "unpaid" | "paid";
+
+export type KitchenStatus =
+  | "waiting_payment"
+  | "received"
+  | "cooking"
+  | "ready"
+  | "served";
+
+export type OrderStage = "diterima" | "dimasak" | "disajikan";
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -12,10 +23,10 @@ export interface MenuItem {
   originalPrice?: number;
   image: string;
   category: "makanan-utama" | "camilan" | "minuman";
-  tag?: string; // e.g. "Bestseller", "Chef Pick", "Pedas Lvl 2"
+  tag?: string;
   rating?: number;
   reviewCount?: number;
-  prepTime?: string; // e.g. "~15 mnt"
+  prepTime?: string;
   isPopular?: boolean;
 }
 
@@ -24,8 +35,6 @@ export interface CartItem {
   quantity: number;
   note?: string;
 }
-
-export type OrderStage = "diterima" | "dimasak" | "disajikan";
 
 export interface OrderStatusItem {
   menuItem: MenuItem;
@@ -36,16 +45,20 @@ export interface OrderStatusItem {
 }
 
 export interface Order {
-  id: string; // e.g. ORD-8824-M14
-  tableNumber: string; // e.g. "14"
+  id: string;
+  tableNumber: string;
   mode: OrderMode;
   items: CartItem[];
   paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  kitchenStatus: KitchenStatus;
+  promoCode?: string;
   subtotal: number;
+  discount: number;
   tax: number;
   serviceFee: number;
   total: number;
   createdAt: string;
-  isPaid: boolean;
-  stage: OrderStage;
+  paidAt?: string;
+  servedAt?: string;
 }

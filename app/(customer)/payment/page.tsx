@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ShieldCheck, ExternalLink, ChevronRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "@/context/SessionContext";
+import { useOrder, markPaid } from "@/lib/order-store";
 import { formatRupiah } from "@/lib/utils";
 import { RESTAURANT_NAME } from "@/lib/constants";
 
@@ -25,12 +26,15 @@ const VA_OPTIONS = [
 export default function PaymentEwalletPage() {
   const router = useRouter();
   const { totals, clearCart, items } = useCart();
-  const { tableNumber, mode, setOrderedItems } = useSession();
+  const { tableNumber, mode, orderId, setOrderedItems } = useSession();
+  const order = useOrder(orderId);
   const [selected, setSelected] = useState("gopay");
 
   const selectedWallet = EWALLETS.find((w) => w.id === selected);
+  const payTotal = order?.total ?? totals.total;
 
   function handlePay() {
+    if (orderId) markPaid(orderId, "ewallet");
     setOrderedItems(items);
     clearCart();
     router.push("/konfirmasi/online");
@@ -63,7 +67,7 @@ export default function PaymentEwalletPage() {
               Rincian <ChevronRight size={13} />
             </span>
           </div>
-          <p className="mt-1 text-2xl font-semibold text-neutral-900">{formatRupiah(totals.total)}</p>
+          <p className="mt-1 text-2xl font-semibold text-neutral-900">{formatRupiah(payTotal)}</p>
           <div className="mt-2 flex items-center gap-1.5 text-[11px] text-neutral-500">
             <ShieldCheck size={13} className="text-brand-600" />
             Transaksi Aman Terenkripsi QRIS 128-bit
@@ -133,8 +137,14 @@ export default function PaymentEwalletPage() {
           onClick={handlePay}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3.5 text-sm font-semibold text-white"
         >
-          Buka Aplikasi {selectedWallet?.name ?? ""} &amp; Bayar ({formatRupiah(totals.total)})
+          Buka Aplikasi {selectedWallet?.name ?? ""} &amp; Bayar ({formatRupiah(payTotal)})
           <ExternalLink size={14} />
+        </button>
+        <button
+          onClick={() => router.push("/verifikasi-kasir")}
+          className="mt-3 w-full text-center text-sm font-medium text-neutral-500"
+        >
+          Sudah Bayar? Lihat QR Gate Kasir →
         </button>
 
         <p className="mt-6 text-center text-[11px] text-neutral-400">
