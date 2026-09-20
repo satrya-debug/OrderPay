@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ShieldCheck, ExternalLink, ChevronRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -25,39 +25,71 @@ const VA_OPTIONS = [
 
 export default function PaymentEwalletPage() {
   const router = useRouter();
-  const { totals, clearCart, items } = useCart();
+  const { clearCart, items } = useCart();
   const { tableNumber, mode, orderId, setOrderedItems } = useSession();
   const order = useOrder(orderId);
   const [selected, setSelected] = useState("gopay");
 
+  const isPendingCash = order?.paymentMethod === "cash" && order.paymentStatus === "unpaid";
+
+  useEffect(() => {
+    if (isPendingCash) router.replace("/payment/cash");
+  }, [isPendingCash, router]);
+
   const selectedWallet = EWALLETS.find((w) => w.id === selected);
-  const payTotal = order?.total ?? totals.total;
 
   function handlePay() {
-    if (orderId) markPaid(orderId, "ewallet");
+    if (!order) return;
+    markPaid(order.id, "ewallet");
     setOrderedItems(items);
     clearCart();
     router.push("/konfirmasi/online");
   }
 
-  return (
-    <div>
-      <header className="flex items-center justify-between px-5 py-3 bg-white border-b border-black/5">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="rounded-full border border-neutral-200 p-2">
-            <ArrowLeft size={16} />
-          </button>
-          <div className="leading-tight">
-            <p className="text-[10px] tracking-wide text-neutral-500">{RESTAURANT_NAME}</p>
-            <h1 className="text-[15px] font-semibold text-neutral-900">Payment Checkout</h1>
+  const header = (
+    <header className="flex items-center justify-between px-5 py-3 bg-white border-b border-black/5">
+      <div className="flex items-center gap-3">
+        <button onClick={() => router.back()} className="rounded-full border border-neutral-200 p-2">
+          <ArrowLeft size={16} />
+        </button>
+        <div className="leading-tight">
+          <p className="text-[10px] tracking-wide text-neutral-500">{RESTAURANT_NAME}</p>
+          <h1 className="text-[15px] font-semibold text-neutral-900">Payment Checkout</h1>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-3 py-1.5 text-[11px] font-medium text-[#054B35]">
+        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        {mode === "dine-in" ? `Meja ${tableNumber}` : "Takeaway"}
+      </div>
+    </header>
+  );
+
+  if (isPendingCash) return null;
+
+  if (!order || order.paymentStatus === "paid") {
+    return (
+      <div>
+        {header}
+        <div className="px-5 pt-4">
+          <div className="mt-16 flex flex-col items-center text-center">
+            <p className="text-sm font-medium text-neutral-700">Belum ada pesanan</p>
+            <p className="mt-1 text-xs text-neutral-500">Yuk pilih menu favoritmu dulu.</p>
+            <button
+              onClick={() => router.push("/menu")}
+              className="mt-4 rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Lihat Menu
+            </button>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        <div className="flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-3 py-1.5 text-[11px] font-medium text-[#054B35]">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          {mode === "dine-in" ? `Meja ${tableNumber}` : "Takeaway"}
-        </div>
-      </header>
+  return (
+    <div>
+      {header}
 
       <div className="px-5 pt-4 pb-8">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
@@ -67,7 +99,7 @@ export default function PaymentEwalletPage() {
               Rincian <ChevronRight size={13} />
             </span>
           </div>
-          <p className="mt-1 text-2xl font-semibold text-neutral-900">{formatRupiah(payTotal)}</p>
+          <p className="mt-1 text-2xl font-semibold text-neutral-900">{formatRupiah(order.total)}</p>
           <div className="mt-2 flex items-center gap-1.5 text-[11px] text-neutral-500">
             <ShieldCheck size={13} className="text-brand-600" />
             Transaksi Aman Terenkripsi QRIS 128-bit
@@ -137,7 +169,7 @@ export default function PaymentEwalletPage() {
           onClick={handlePay}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3.5 text-sm font-semibold text-white"
         >
-          Buka Aplikasi {selectedWallet?.name ?? ""} &amp; Bayar ({formatRupiah(payTotal)})
+          Buka Aplikasi {selectedWallet?.name ?? ""} &amp; Bayar ({formatRupiah(order.total)})
           <ExternalLink size={14} />
         </button>
         <button
