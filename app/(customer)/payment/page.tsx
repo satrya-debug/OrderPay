@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ShieldCheck, ExternalLink, ChevronRight } from "lucide-react";
+import { ArrowLeft, ShieldCheck, ExternalLink, ChevronRight, XCircle } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "@/context/SessionContext";
 import { useOrder, markPaid } from "@/lib/order-store";
@@ -29,6 +29,8 @@ export default function PaymentEwalletPage() {
   const { tableNumber, mode, orderId, setOrderedItems } = useSession();
   const order = useOrder(orderId);
   const [selected, setSelected] = useState("gopay");
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState("");
 
   const isPendingCash = order?.paymentMethod === "cash" && order.paymentStatus === "unpaid";
 
@@ -38,9 +40,18 @@ export default function PaymentEwalletPage() {
 
   const selectedWallet = EWALLETS.find((w) => w.id === selected);
 
-  function handlePay() {
-    if (!order) return;
-    markPaid(order.id, "ewallet");
+  async function handlePay() {
+    if (!order || paying) return;
+    setPaying(true);
+    setPayError("");
+
+    const err = await markPaid(order.id, "ewallet");
+    if (err) {
+      setPayError(err);
+      setPaying(false);
+      return;
+    }
+
     setOrderedItems(items);
     clearCart();
     router.push("/konfirmasi/online");
@@ -67,7 +78,7 @@ export default function PaymentEwalletPage() {
 
   if (isPendingCash) return null;
 
-  if (!order || order.paymentStatus === "paid") {
+  if (!order || (order.paymentStatus === "paid" && !paying)) {
     return (
       <div>
         {header}
@@ -165,12 +176,22 @@ export default function PaymentEwalletPage() {
           ))}
         </div>
 
+        {payError && (
+          <div className="mt-4 flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-600">
+            <XCircle size={14} className="shrink-0" />
+            {payError}
+          </div>
+        )}
+
         <button
           onClick={handlePay}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3.5 text-sm font-semibold text-white"
+          disabled={paying}
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Buka Aplikasi {selectedWallet?.name ?? ""} &amp; Bayar ({formatRupiah(order.total)})
-          <ExternalLink size={14} />
+          {paying
+            ? "Memproses pembayaran..."
+            : `Buka Aplikasi ${selectedWallet?.name ?? ""} & Bayar (${formatRupiah(order.total)})`}
+          {!paying && <ExternalLink size={14} />}
         </button>
         <button
           onClick={() => router.push("/verifikasi-kasir")}

@@ -6,6 +6,7 @@ import { Briefcase, Eye, EyeOff, ChefHat, ShieldQuestion, LogIn, KeyRound, XCirc
 import { Logo } from "@/components/layout/Logo";
 import { RESTAURANT_NAME, APP_NAME } from "@/lib/constants";
 import { StaffRole } from "@/lib/types";
+import { getSupabase } from "@/lib/supabase/client";
 
 const ROLES: { id: StaffRole; label: string; icon: typeof Briefcase; placeholder: string }[] = [
   { id: "kasir", label: "Kasir", icon: Briefcase, placeholder: "Contoh: KSR-014" },
@@ -19,14 +20,6 @@ const ROLE_REDIRECT: Record<StaffRole, string> = {
   admin: "/admin/menu",
 };
 
-const ACCOUNTS: { role: StaffRole; id: string; pin: string }[] = [
-  { role: "kasir", id: "KSR-014", pin: "142024" },
-  { role: "koki", id: "KOK-021", pin: "210521" },
-  { role: "admin", id: "ADM-001", pin: "900100" },
-];
-
-const SHOW_DEMO_HINT = true;
-
 export default function LoginKaryawanPage() {
   const router = useRouter();
   const [role, setRole] = useState<StaffRole>("kasir");
@@ -34,9 +27,9 @@ export default function LoginKaryawanPage() {
   const [pin, setPin] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const currentRole = ROLES.find((r) => r.id === role)!;
-  const demoAccount = ACCOUNTS.find((a) => a.role === role);
 
   function handleSelectRole(next: StaffRole) {
     setRole(next);
@@ -46,23 +39,42 @@ export default function LoginKaryawanPage() {
     setError("");
   }
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
 
     if (!staffId.trim() || !pin) {
       setError("Masukkan ID karyawan dan PIN.");
       return;
     }
 
-    const account = ACCOUNTS.find(
-      (a) =>
-        a.role === role &&
-        a.id.toLowerCase() === staffId.trim().toLowerCase() &&
-        a.pin === pin
-    );
+    setLoading(true);
+    setError("");
 
-    if (!account) {
-      setError(`ID atau PIN salah untuk peran ${currentRole.label}.`);
+    const supabase = getSupabase();
+    const failMessage = `ID atau PIN salah untuk peran ${currentRole.label}.`;
+
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email: `${staffId.trim().toLowerCase()}@orderpay.local`,
+      password: pin,
+    });
+
+    if (authError || !data.user) {
+      setError(failMessage);
+      setLoading(false);
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, is_active")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    if (!profile || !profile.is_active || profile.role !== role) {
+      await supabase.auth.signOut();
+      setError(failMessage);
+      setLoading(false);
       return;
     }
 
@@ -175,19 +187,12 @@ export default function LoginKaryawanPage() {
 
           <button
             type="submit"
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-[0.98]"
+            disabled={loading}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogIn size={16} />
-            Masuk ke Dashboard {currentRole.label}
+            {loading ? "Memeriksa..." : `Masuk ke Dashboard ${currentRole.label}`}
           </button>
-
-          {SHOW_DEMO_HINT && demoAccount && (
-            <p className="mt-4 text-center text-[11px] text-neutral-400">
-              Akun demo {currentRole.label}:{" "}
-              <span className="font-mono text-neutral-500">{demoAccount.id}</span> /{" "}
-              <span className="font-mono text-neutral-500">{demoAccount.pin}</span>
-            </p>
-          )}
         </form>
       </div>
 

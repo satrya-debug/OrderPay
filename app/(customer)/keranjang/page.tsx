@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSession } from "@/context/SessionContext";
-import { createOrder } from "@/lib/order-store";
-import { formatRupiah, generateOrderId } from "@/lib/utils";
+import { createOrder, validatePromo } from "@/lib/order-store";
+import { formatRupiah } from "@/lib/utils";
 import { RESTAURANT_NAME } from "@/lib/constants";
 
 const PAYMENT_OPTIONS = [
@@ -35,10 +35,6 @@ const PAYMENT_OPTIONS = [
   },
 ];
 
-const PROMO_CODES: Record<string, number> = {
-  LIWET20: 0.2,
-};
-
 export default function KeranjangPage() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, paymentMethod, setPaymentMethod, totals, clearCart } =
@@ -47,13 +43,16 @@ export default function KeranjangPage() {
 
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [discountRate, setDiscountRate] = useState(0);
   const [promoError, setPromoError] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const discountRate = appliedPromo ? PROMO_CODES[appliedPromo] : 0;
-  const discount = totals.subtotal * discountRate;
+  const discount = Math.round(totals.subtotal * discountRate);
   const grandTotal = totals.total - discount;
 
-  function handleApplyPromo() {
+  async function handleApplyPromo() {
     const code = promoInput.trim().toUpperCase();
 
     if (!code) {
@@ -61,42 +60,52 @@ export default function KeranjangPage() {
       return;
     }
 
-    if (PROMO_CODES[code]) {
-      setAppliedPromo(code);
-      setPromoInput(code);
-      setPromoError("");
-    } else {
+    setPromoLoading(true);
+    setPromoError("");
+    const rate = await validatePromo(code);
+    setPromoLoading(false);
+
+    if (rate === null) {
       setAppliedPromo(null);
+      setDiscountRate(0);
       setPromoError("Kode promo tidak valid");
+      return;
     }
+
+    setAppliedPromo(code);
+    setDiscountRate(rate);
+    setPromoInput(code);
   }
 
   function handleRemovePromo() {
     setAppliedPromo(null);
+    setDiscountRate(0);
     setPromoInput("");
     setPromoError("");
   }
 
-  function handleConfirm() {
-    const id = generateOrderId(tableNumber);
-    createOrder(
-      {
-        id,
-        tableNumber: String(tableNumber),
-        mode,
-        items,
-        paymentMethod,
-        promoCode: appliedPromo ?? undefined,
-        subtotal: totals.subtotal,
-        discount,
-        tax: totals.tax,
-        serviceFee: totals.serviceFee,
-        total: grandTotal,
-      },
-      orderId
-    );
-    setOrderId(id);
-    router.push(paymentMethod === "ewallet" ? "/payment" : "/payment/cash");
+  async function handleConfirm() {
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const order = await createOrder(
+        {
+          tableNumber: String(tableNumber),
+          mode,
+          paymentMethod,
+          promoCode: appliedPromo,
+          items,
+        },
+        orderId
+      );
+      setOrderId(order.id);
+      router.push(paymentMethod === "ewallet" ? "/payment" : "/payment/cash");
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : "Gagal membuat pesanan. Coba lagi.");
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -215,9 +224,10 @@ export default function KeranjangPage() {
                 ) : (
                   <button
                     onClick={handleApplyPromo}
-                    className="rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-95"
+                    disabled={promoLoading}
+                    className="rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
                   >
-                    Terapkan
+                    {promoLoading ? "Memeriksa..." : "Terapkan"}
                   </button>
                 )}
               </div>
@@ -300,11 +310,19 @@ export default function KeranjangPage() {
               </div>
             </div>
 
+            {submitError && (
+              <div className="mt-4 flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-600">
+                <XCircle size={14} className="shrink-0" />
+                {submitError}
+              </div>
+            )}
+
             <button
               onClick={handleConfirm}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-[0.98]"
+              disabled={submitting}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Konfirmasi &amp; Bayar ({formatRupiah(grandTotal)})
+              {submitting ? "Memproses pesanan..." : `Konfirmasi & Bayar (${formatRupiah(grandTotal)})`}
             </button>
             <button
               onClick={clearCart}

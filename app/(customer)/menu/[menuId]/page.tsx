@@ -18,32 +18,23 @@ import {
   Clock,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { MENU_ITEMS } from "@/lib/mock-data";
-import { MenuItem } from "@/lib/types";
+import { useSession } from "@/context/SessionContext";
+import { useMenuItem } from "@/lib/menu-store";
 
 export default function DetailMenuPage() {
   const params = useParams();
   const router = useRouter();
-  const menuId = params?.menuId ? String(params.menuId) : "ngk01";
+  const menuId = params?.menuId ? String(params.menuId) : "";
 
-  const foundMenu = MENU_ITEMS.find((item) => String(item.id) === menuId);
-  const menu: MenuItem = (foundMenu || {
-    id: menuId,
-    name: "Nasi Goreng Kampung Spesial",
-    price: 38000,
-    description:
-      "Nasi goreng racikan bumbu terasi khas Nusantara yang harum gurih, disajikan dengan telur mata sapi setengah matang, 2 tusuk sate ayam empuk bumbu kacang, kerupuk udang renyah, acar segar, dan taburan bawang goreng renyah.",
-    image:
-      "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80",
-    category: "Makanan Utama",
-    isPopular: true,
-  }) as MenuItem;
-
+  const { item: menu, loading } = useMenuItem(menuId);
   const { addItem, totalItemCount } = useCart();
+  const { tableNumber, mode } = useSession();
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
   const [customNote, setCustomNote] = useState<string>("");
   const [isLiked, setIsLiked] = useState<boolean>(false);
+
+  const placeLabel = mode === "dine-in" ? `Meja ${tableNumber}` : "Takeaway";
 
   const noteOptions = [
     "+ Pedas Sedang",
@@ -53,6 +44,36 @@ export default function DetailMenuPage() {
     "+ Tanpa Daun Bawang",
     "+ Kerupuk Dipisah",
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] text-[#1A1A18]">
+        <div className="max-w-md mx-auto min-h-screen bg-white p-8 text-center text-xs text-stone-500">
+          Memuat menu...
+        </div>
+      </div>
+    );
+  }
+
+  if (!menu) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] text-[#1A1A18]">
+        <div className="max-w-md mx-auto min-h-screen bg-white p-8 flex flex-col items-center text-center">
+          <p className="mt-24 text-sm font-medium text-slate-800">Menu tidak ditemukan</p>
+          <p className="mt-1 text-xs text-stone-500">
+            Menu ini mungkin sudah tidak tersedia.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/menu")}
+            className="mt-4 rounded-xl bg-[#054B35] px-5 py-2.5 text-sm text-white hover:bg-emerald-900 transition"
+          >
+            Kembali ke Menu
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const toggleNote = (option: string) => {
     if (selectedNotes.includes(option)) {
@@ -69,6 +90,7 @@ export default function DetailMenuPage() {
   };
 
   const estimatedTotal = menu.price * quantity;
+  const hasDiscount = !!menu.originalPrice && menu.originalPrice > menu.price;
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] pb-44 text-[#1A1A18] font-sans">
@@ -85,7 +107,7 @@ export default function DetailMenuPage() {
           <div className="flex items-center gap-2">
             <span className="bg-white/90 backdrop-blur-md text-[#3F3F46] text-xs px-3 py-1.5 rounded-full font-normal border border-stone-200/60 shadow-sm flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#054B35]"></span>
-              Meja 14
+              {placeLabel}
             </span>
             <button
               type="button"
@@ -102,32 +124,51 @@ export default function DetailMenuPage() {
         </div>
 
         <div className="relative w-full h-72 bg-stone-100">
-          <Image
-            src={menu.image}
-            alt={menu.name}
-            fill
-            priority
-            sizes="(max-width: 448px) 100vw, 448px"
-            className="object-cover"
-          />
+          {menu.image ? (
+            <Image
+              src={menu.image}
+              alt={menu.name}
+              fill
+              priority
+              sizes="(max-width: 448px) 100vw, 448px"
+              className="object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-stone-400">
+              <UtensilsCrossed className="w-8 h-8 stroke-[1.5]" />
+              <span className="text-[11px]">Belum ada foto</span>
+            </div>
+          )}
+
           <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between z-10">
-            <div className="bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-normal flex items-center gap-1.5 border border-white/20">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span>4.9</span>
-              <span className="text-stone-300 font-light">(120+ ulasan)</span>
-            </div>
-            <div className="bg-white/90 backdrop-blur-md text-slate-800 px-3 py-1 rounded-full text-xs font-normal flex items-center gap-1 border border-stone-200/60 shadow-sm">
-              <Clock className="w-3.5 h-3.5 text-stone-500 stroke-[1.8]" />
-              <span>~15 mnt</span>
-            </div>
+            {menu.rating ? (
+              <div className="bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-normal flex items-center gap-1.5 border border-white/20">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <span>{menu.rating}</span>
+                {menu.reviewCount ? (
+                  <span className="text-stone-300 font-light">({menu.reviewCount} ulasan)</span>
+                ) : null}
+              </div>
+            ) : (
+              <span />
+            )}
+
+            {menu.prepTime && (
+              <div className="bg-white/90 backdrop-blur-md text-slate-800 px-3 py-1 rounded-full text-xs font-normal flex items-center gap-1 border border-stone-200/60 shadow-sm">
+                <Clock className="w-3.5 h-3.5 text-stone-500 stroke-[1.8]" />
+                <span>{menu.prepTime}</span>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="p-4 space-y-4">
           <div className="bg-white rounded-2xl p-4 border border-[#E4E4E7] shadow-sm space-y-2">
-            <span className="inline-block text-[10px] font-normal uppercase tracking-wider bg-stone-100 text-stone-600 px-2.5 py-1 rounded-md">
-              PILIHAN CHEF
-            </span>
+            {menu.tag && (
+              <span className="inline-block text-[10px] font-normal uppercase tracking-wider bg-stone-100 text-stone-600 px-2.5 py-1 rounded-md">
+                {menu.tag}
+              </span>
+            )}
             <h1 className="text-xl font-normal text-[#09090B] tracking-tight leading-snug">
               {menu.name}
             </h1>
@@ -136,9 +177,11 @@ export default function DetailMenuPage() {
               <span className="text-lg font-normal text-[#09090B]">
                 Rp {menu.price.toLocaleString("id-ID")}
               </span>
-              <span className="text-xs text-stone-400 line-through font-light">
-                Rp 45.000
-              </span>
+              {hasDiscount && (
+                <span className="text-xs text-stone-400 line-through font-light">
+                  Rp {menu.originalPrice!.toLocaleString("id-ID")}
+                </span>
+              )}
             </div>
 
             <p className="text-xs text-stone-600 font-light leading-relaxed pt-1">
@@ -238,7 +281,7 @@ export default function DetailMenuPage() {
 
             <div className="flex items-center justify-center gap-1.5 text-[10px] text-stone-500 font-light pt-0.5">
               <RefreshCw className="w-3 h-3 text-[#054B35] stroke-[1.8]" />
-              <span>Langsung terhubung dengan sistem kasir Meja 14</span>
+              <span>Langsung terhubung dengan sistem kasir {placeLabel}</span>
             </div>
           </div>
         </div>
@@ -264,7 +307,7 @@ export default function DetailMenuPage() {
             <span className="text-[11px] font-normal">Keranjang</span>
           </Link>
           <Link
-            href="/pembayaran"
+            href="/payment"
             className="flex flex-col items-center gap-1 text-[#9CA3AF] hover:text-slate-800"
           >
             <ReceiptText className="w-5 h-5 stroke-[1.8]" />
