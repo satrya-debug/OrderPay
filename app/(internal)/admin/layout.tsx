@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image"; // 1. Menambahkan import Image
 import { usePathname, useRouter } from "next/navigation";
 import { Utensils, Archive, Users, Bell, LogOut, Receipt } from "lucide-react";
 import { useOrders } from "@/lib/order-store";
@@ -15,21 +16,30 @@ const NAV = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const orders = useOrders().filter(
-  (o) => o.paymentStatus === "paid" || o.paymentMethod === "cash"
-);
-
-  const totalToday = orders.length;
-  const pendingCount = orders.filter((o) => o.paymentStatus === "unpaid").length;
-  const paidCount = orders.filter((o) => o.paymentStatus === "paid").length;
+  
+  // Ambil data pesanan
+  const allOrders = useOrders();
+  
+  // Hitung statistik pesanan
+  const totalToday = allOrders.length;
+  const pendingCount = allOrders.filter((o) => o.paymentStatus === "unpaid").length;
+  const paidCount = allOrders.filter((o) => o.paymentStatus === "paid").length;
 
   return (
     <div className="flex min-h-screen bg-[#f4f4f2]">
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 flex-shrink-0 sticky top-0 h-screen">
         <div className="space-y-6">
+          
+          {/* HEADER LOGO REVISI */}
           <div className="flex items-center gap-3 px-2 pt-2">
-            <div className="w-10 h-10 rounded-full bg-[#054B35] flex items-center justify-center text-white font-normal">
-              <span className="text-xl font-bold">O</span>
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
+              <Image
+                src="/images/menu/logo_orderpay1.png"
+                alt="Logo OrderPay"
+                fill
+                sizes="40px"
+                className="object-contain"
+              />
             </div>
             <div>
               <h1 className="font-normal text-slate-900 text-base leading-tight">OrderPay</h1>
@@ -37,6 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
 
+          {/* STATUS ADMIN */}
           <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
             <div className="flex items-center justify-between text-xs font-normal text-slate-500">
               <span>STATUS ADMIN</span>
@@ -53,6 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
 
+          {/* PESANAN MASUK */}
           <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
             <div className="flex items-center justify-between text-xs font-normal text-slate-500">
               <span>PESANAN MASUK</span>
@@ -70,6 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
 
+          {/* NAVIGASI */}
           <nav className="space-y-1">
             {NAV.map(({ href, label, icon: Icon }) => {
               const active = pathname?.startsWith(href);
@@ -91,6 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
         </div>
 
+        {/* FOOTER SIDEBAR */}
         <div className="space-y-2">
           <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
             <div className="flex items-center gap-2 text-xs font-normal text-slate-700">
@@ -111,18 +125,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
+      {/* CONTENT AREA */}
       <div className="flex-1 min-w-0">
         <header className="flex items-center justify-between border-b border-black/5 bg-white px-6 py-3">
           <div className="flex items-center gap-3 text-xs text-neutral-500">
             <span className="flex items-center gap-1.5 font-medium text-neutral-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-500" /> DASHBOARD ADMIN
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> DASHBOARD ADMIN
             </span>
             <span className="text-neutral-300">|</span>
             <span>{new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB</span>
             <span className="text-neutral-300">|</span>
             <span>Admin: Siti Aisyah</span>
           </div>
-          <button className="rounded-full bg-neutral-100 p-2 text-neutral-500">
+          <button className="rounded-full bg-neutral-100 p-2 text-neutral-500 hover:bg-neutral-200 transition">
             <Bell size={16} />
           </button>
         </header>

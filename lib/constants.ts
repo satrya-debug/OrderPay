@@ -1,4 +1,4 @@
-export const RESTAURANT_NAME = "Bistro Rasa Nusantara";
+export const RESTAURANT_NAME = "Resto suka maju";
 export const APP_NAME = "OrderPay";
 
 export const TAX_RATE = 0.1; // PB1 / Pajak Restoran 10%

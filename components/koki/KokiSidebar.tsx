@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, History, LogOut } from "lucide-react";
 
@@ -15,9 +16,17 @@ export default function KokiSidebar() {
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 flex-shrink-0">
       <div className="space-y-6">
+        
+        {/* HEADER LOGO KOKI */}
         <div className="flex items-center gap-3 px-2 pt-2">
-          <div className="w-10 h-10 rounded-full bg-[#054B35] flex items-center justify-center text-white font-normal">
-            <span className="text-xl font-bold">O</span>
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
+            <Image
+              src="/images/menu/logo_orderpay1.png"
+              alt="Logo OrderPay"
+              fill
+              sizes="40px"
+              className="object-contain"
+            />
           </div>
           <div>
             <h1 className="font-normal text-slate-900 text-base leading-tight">OrderPay</h1>
@@ -25,6 +34,7 @@ export default function KokiSidebar() {
           </div>
         </div>
 
+        {/* STATUS DAPUR */}
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
           <div className="flex items-center justify-between text-xs font-normal text-slate-500">
             <span>STATUS DAPUR</span>
@@ -41,6 +51,7 @@ export default function KokiSidebar() {
           </div>
         </div>
 
+        {/* NAVIGASI */}
         <nav className="space-y-1">
           <Link
             href="/koki"
@@ -68,6 +79,7 @@ export default function KokiSidebar() {
         </nav>
       </div>
 
+      {/* FOOTER SIDEBAR */}
       <div className="space-y-2">
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <div className="flex items-center gap-2 text-xs font-normal text-slate-700">

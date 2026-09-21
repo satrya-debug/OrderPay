@@ -151,8 +151,15 @@ export function MenuPageContent({ initialMode }: MenuPageContentProps) {
       {/* HEADER */}
       <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-xl border-b border-[#E4E4E7] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#054B35] to-emerald-700 flex items-center justify-center shadow-md shadow-emerald-900/20">
-            <Utensils className="w-4 h-4 text-white stroke-[1.8]" />
+          {/* LOGO BARU DARI PUBLIC */}
+          <div className="relative w-9 h-9 rounded-2xl overflow-hidden flex items-center justify-center shadow-sm border border-[#E4E4E7]">
+      <Image
+        src="/images/menu/logo_orderpay1.png"
+        alt="Logo OrderPay"
+        fill
+        sizes="36px"
+        className="object-contain p-1"
+      />
           </div>
 
           <div>
