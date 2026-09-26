@@ -164,7 +164,7 @@ export function MenuPageContent({ initialMode }: MenuPageContentProps) {
 
           <div>
             <p className="text-[9px] text-[#71717A] tracking-widest uppercase font-medium">
-              Bistro Rasa Nusantara
+              Resto suka maju
             </p>
 
             <h1 className="text-sm font-semibold text-[#09090B] leading-tight">
